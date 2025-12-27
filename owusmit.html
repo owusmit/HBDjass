@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Happy Birthday Jasuu</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&family=Pacifico&family=Times+New+Roman&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --accent: #ff85a1;
+            --text: #4a0e0e;
+            --glass: rgba(255, 255, 255, 0.6);
+            --card-border: rgba(255, 255, 255, 0.8);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            font-family: 'Quicksand', sans-serif; 
+            background: linear-gradient(135deg, #fff5f7 0%, #ffe3ec 100%); 
+            overflow: hidden; position: fixed; 
+        }
+
+        /* Animated Background */
+        #bg-elements { position: fixed; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        .floating { position: absolute; animation: drift linear infinite; opacity: 0.4; font-size: 20px; }
+        @keyframes drift { 0% { transform: translateY(110vh) rotate(0deg); } 100% { transform: translateY(-10vh) rotate(360deg); } }
+
+        /* Glassmorphic Container */
+        .app-container { position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; z-index: 10; }
+
+        .card { 
+            position: absolute; width: 90%; max-width: 380px; max-height: 85vh;
+            background: var(--glass); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-radius: 35px; border: 2px solid var(--card-border);
+            box-shadow: 0 20px 40px rgba(255, 133, 161, 0.2);
+            padding: 25px; text-align: center; display: none;
+            flex-direction: column; align-items: center; justify-content: center; overflow-y: auto;
+        }
+        .active { display: flex !important; }
+
+        h1 { font-family: 'Pacifico', cursive; color: var(--accent); font-size: 1.8rem; margin: 10px 0; }
+        p { color: var(--text); font-weight: 600; font-size: 0.95rem; line-height: 1.4; margin-bottom: 20px; }
+        .btn-main { background: var(--accent); color: white; border: none; padding: 14px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; box-shadow: 0 5px 15px rgba(255, 133, 161, 0.4); transition: 0.3s; margin-top: 10px; }
+
+        /* Reasons Page */
+        .reason-box { background: white; padding: 15px; border-radius: 20px; min-height: 80px; width: 100%; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; color: var(--accent); font-weight: bold; border: 1px solid #ffe3ec; font-size: 1.1rem; }
+        .heart-btn { width: 70px; height: 70px; cursor: pointer; animation: pulse 1.5s infinite; fill: var(--accent); }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        /* Photo Stack */
+        .stack-area { position: relative; width: 220px; height: 280px; margin: 15px 0; perspective: 1000px; }
+        .photo-card { position: absolute; width: 100%; height: 100%; background: white; padding: 10px 10px 35px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); cursor: pointer; transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
+        .photo-card img { width: 100%; height: 100%; object-fit: cover; border-radius: 5px; }
+
+        /* Coupons */
+        .coupon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+        .coupon { background: rgba(255,255,255,0.8); border: 2px dashed var(--accent); padding: 15px 5px; border-radius: 15px; font-size: 0.8rem; cursor: pointer; transition: 0.3s; }
+        .used { opacity: 0.5; filter: grayscale(1); transform: scale(0.95); }
+
+        /* Kiss Page Animation */
+        .kiss-frame { position: relative; width: 220px; height: 280px; border: 8px solid white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.1); margin-bottom: 15px; background: #fff; }
+        .kiss-frame img { width: 100%; height: 100%; object-fit: cover; }
+        .mini-kiss { position: absolute; font-size: 25px; bottom: -40px; pointer-events: none; z-index: 10; animation: floatUp 2s ease-out forwards; }
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 1; }
+            100% { transform: translateY(-150px) scale(1.5) rotate(20deg); opacity: 0; }
+        }
+
+        /* Envelope & Letter */
+        .envelope { width: 150px; height: 100px; background: #fff; border-radius: 0 0 10px 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); cursor: pointer; position: relative; margin: 30px auto; }
+        .flap { position: absolute; top: 0; left: 0; width: 0; height: 0; border-left: 75px solid transparent; border-right: 75px solid transparent; border-top: 60px solid #ffccd5; transform-origin: top; transition: 0.6s; z-index: 3; }
+        .modal { position: fixed; bottom: -110%; left: 50%; transform: translateX(-50%); width: 92%; max-width: 380px; height: 75vh; background: #fffef0; padding: 30px; border-radius: 35px 35px 0 0; z-index: 100; transition: 0.6s; overflow-y: auto; text-align: left; box-shadow: 0 -10px 30px rgba(0,0,0,0.2); }
+        .modal.open { bottom: 0; }
+
+        /* Promise Page Decorated */
+        .promise-stack { position: relative; width: 100%; height: 320px; margin: 10px 0; perspective: 1200px; }
+        .legal-paper { 
+            position: absolute; width: 100%; height: 100%; 
+            background: #fffef2; border: 2.5px solid #ffccd5; padding: 25px; 
+            text-align: left; box-shadow: 6px 6px 15px rgba(255, 133, 161, 0.15); 
+            transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); 
+            border-left: 4px solid var(--accent); display: flex; flex-direction: column;
+            border-radius: 5px;
+        }
+        .legal-paper::before { content: '❤'; position: absolute; top: 5px; right: 8px; color: var(--accent); font-size: 1.2rem; opacity: 0.6; }
+        .legal-paper::after { content: '❤'; position: absolute; bottom: 5px; left: 35px; color: var(--accent); font-size: 0.8rem; opacity: 0.4; }
+        
+        .legal-paper h3 { font-family: 'Times New Roman', serif; border-bottom: 1.5px solid var(--accent); font-size: 1.1rem; margin-bottom: 12px; color: var(--text); text-transform: uppercase; letter-spacing: 1px; }
+        .legal-paper p { font-family: 'Times New Roman', serif; font-size: 0.95rem; color: #5d4037; line-height: 1.5; font-style: italic; font-weight: 500; }
+        
+        .thumb-zone { margin-top: auto; align-self: flex-end; cursor: pointer; text-align: center; padding: 5px; border-radius: 10px; transition: background 0.3s; }
+        .thumb-zone:active { background: rgba(255, 133, 161, 0.1); }
+        .thumb-img { width: 50px; height: 62px; opacity: 0.2; filter: grayscale(1); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .signed .thumb-img { opacity: 1; filter: grayscale(0) sepia(1) saturate(12) hue-rotate(-55deg); transform: scale(0.9) rotate(-5deg); }
+        .paper-exit { transform: rotate(-18deg) translateX(-140%) translateY(-15%) rotateY(-25deg) !important; opacity: 0; pointer-events: none; }
+
+        /* Cake */
+        .cake-box { cursor: pointer; margin: 20px 0; }
+        .candle { width: 10px; height: 35px; background: #bbdefb; border-radius: 5px; margin: 0 auto -5px; position: relative; z-index: 5; }
+        .flame { width: 12px; height: 20px; background: orange; border-radius: 50% 50% 20% 20%; position: absolute; top: -20px; left: -1px; opacity: 0; }
+        .lit .flame { opacity: 1; animation: flicker 0.6s infinite alternate; }
+        .cake-layer { width: 160px; height: 45px; background: #f48fb1; border-radius: 12px 12px 0 0; position: relative; }
+        .cake-layer.mid { width: 110px; height: 35px; margin: 0 auto; }
+        .frosting { position: absolute; top: 0; width: 100%; height: 12px; background: #ffccd5; border-radius: 15px; }
+        @keyframes flicker { from { transform: scale(1); } to { transform: scale(1.1); } }
+    </style>
+</head>
+<body>
+
+    <div id="bg-elements"></div>
+
+    <div class="app-container">
+        <div id="p1" class="card active">
+            <div style="font-size: 3.5rem; margin-bottom: 10px;">🌸</div>
+            <h1>Hi Birthday Girl!</h1>
+            <p>I've created a small digital world to celebrate you. Ready to explore it?</p>
+            <button class="btn-main" onclick="nav(2)">Enter Journey ❤</button>
+        </div>
+
+        <div id="p2" class="card">
+            <h1>10 Reasons Why</h1>
+            <div class="reason-box" id="reason-text">Tap the heart to begin...</div>
+            <div onclick="nextReason()">
+                <svg class="heart-btn" viewBox="0 0 32 32"><path d="M16 28.5L14.1 26.8C7.33 20.66 2.5 16.45 2.5 11.25C2.5 7.15 5.65 4 9.75 4C12.05 4 14.3 5.08 15.75 6.82C17.2 5.08 19.45 4 21.75 4C25.85 4 29 7.15 29 11.25C29 16.45 24.17 20.66 17.4 26.8L16 28.5Z"/></svg>
+            </div>
+            <p id="why-count" style="margin-top:15px; font-size:0.8rem; opacity: 0.6;">Remaining: 10</p>
+            <button id="next-why" class="btn-main" style="display:none;" onclick="nav(3)">Next: Our Memories ➔</button>
+        </div>
+
+        <div id="p3" class="card">
+            <h1>Moments Together</h1>
+            <div class="stack-area" id="photo-stack"></div>
+            <p>Tap a photo to toss it!</p>
+            <button id="next-photo" class="btn-main" style="display:none;" onclick="nav(4)">Next: Gifts for You ➔</button>
+        </div>
+
+        <div id="p4" class="card">
+            <h1>Love Coupons</h1>
+            <div class="coupon-grid">
+                <div class="coupon" onclick="redeem(this)">Dinner Date 🍝</div>
+                <div class="coupon" onclick="redeem(this)">No Arguments 🕊️</div>
+                <div class="coupon" onclick="redeem(this)">Infinite Hugs 🫂</div>
+                <div class="coupon" onclick="redeem(this)">Movie Pick 🍿</div>
+            </div>
+            <button class="btn-main" style="margin-top:20px" onclick="nav(5)">Give me a kiss first ➔</button>
+        </div>
+
+        <div id="p5" class="card">
+            <h1>Pucchhi Time! 💋</h1>
+            <div class="kiss-frame" id="kiss-zone">
+                <img src="kjass.jpg" alt="Jasuu">
+            </div>
+            <p id="kiss-instruction">Tap the button for a pucchhi!</p>
+            <button class="btn-main" id="kiss-btn" onclick="triggerKisses()">Kiss Me! 💋</button>
+            <button class="btn-main" id="next-kiss" style="display:none;" onclick="nav(6)">A Small Message ➔</button>
+        </div>
+
+        <div id="p6" class="card">
+            <h1>A Special Message</h1>
+            <div class="envelope" onclick="openLetter()">
+                <div class="flap" id="flap"></div>
+                <div style="margin-top: 65px; font-size: 0.7rem; opacity: 0.4;">TAP TO OPEN</div>
+            </div>
+        </div>
+
+        <div id="p7" class="card">
+            <h1>Promises to Jasuu</h1>
+            <div class="promise-stack">
+                <div class="legal-paper" id="paper-2" style="z-index: 1;">
+                    <h3>Clause 02: Eternal Smiles</h3>
+                    <p>"I hereby promise to be the guardian of your laughter. No matter how gray the day, I will be the person who finds a way to bring that beautiful smile back to your face."</p>
+                    <div class="thumb-zone" onclick="signPromise(2)">
+                        <img src="https://img.icons8.com/ios-filled/100/4a0e0e/fingerprint.png" class="thumb-img" id="t2">
+                        <div style="font-size:0.6rem; color:var(--accent); font-weight: 600; margin-top: 3px;">SEAL WITH LOVE</div>
+                    </div>
+                </div>
+                <div class="legal-paper" id="paper-1" style="z-index: 2;">
+                    <h3>Clause 01: The Forever Bond</h3>
+                    <p>"It is formally declared that Jasuu is my priority. I promise to support you, grow with you, and stay by your side through every chapter of life. This bond is non-negotiable."</p>
+                    <div class="thumb-zone" onclick="signPromise(1)">
+                        <img src="https://img.icons8.com/ios-filled/100/4a0e0e/fingerprint.png" class="thumb-img" id="t1">
+                        <div style="font-size:0.6rem; color:var(--accent); font-weight: 600; margin-top: 3px;">SEAL WITH LOVE</div>
+                    </div>
+                </div>
+            </div>
+            <button id="next-promise" class="btn-main" style="display:none;" onclick="nav(8)">The Grand Finale ➔</button>
+        </div>
+
+        <div id="p8" class="card">
+            <h1 id="cake-header">Make a Wish</h1>
+            <div class="cake-box" onclick="handleCake()">
+                <div class="candle" id="candle-obj"><div class="flame"></div></div>
+                <div class="cake-layer mid"><div class="frosting"></div></div>
+                <div class="cake-layer"><div class="frosting"></div></div>
+            </div>
+            <p id="cake-sub">Tap to light the candle!</p>
+            <div id="final-cta" style="display:none;">
+                <p>I hope all your dreams come true, Jasuu! ❤️</p>
+                <button class="btn-main" onclick="location.reload()">Replay Love ❤️</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="letter-modal">
+        <div style="font-family:'Pacifico', cursive; font-size:1.1rem; line-height: 1.8; color: #5d4037;">
+            My Dearest Jasuu,<br><br>
+            Happy Birthday! You make every day feel like a celebration. I'm so lucky to have you in my life.<br><br>
+            May your day be as beautiful as your smile.<br><br>
+            Love always,<br>
+            [Your Name]
+        </div>
+        <button class="btn-main" style="width:100%; margin-top: 30px;" onclick="nav(7)">My Promises 📜</button>
+    </div>
+
+    <script>
+        function nav(n) {
+            document.querySelectorAll('.card').forEach(c => { 
+                c.classList.remove('active'); 
+                c.style.display = 'none'; 
+            });
+            document.getElementById('letter-modal').classList.remove('open');
+            const target = document.getElementById('p' + n);
+            target.style.display = 'flex';
+            target.classList.add('active', 'animate__animated', 'animate__fadeIn');
+        }
+
+        // Promise Function
+        function signPromise(num) {
+            const zone = event.currentTarget;
+            if(!zone.classList.contains('signed')) {
+                zone.classList.add('signed');
+                navigator.vibrate?.(50); // Haptic feedback if available
+                setTimeout(() => {
+                    if(num === 1) {
+                        document.getElementById('paper-1').classList.add('paper-exit');
+                    } else {
+                        document.getElementById('next-promise').style.display = 'block';
+                        confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
+                    }
+                }, 800);
+            }
+        }
+
+        setInterval(() => {
+            const symbols = ['🌸','✨','⭐','🎀','💖'];
+            const e = document.createElement('div');
+            e.className = 'floating';
+            e.innerText = symbols[Math.floor(Math.random()*symbols.length)];
+            e.style.left = Math.random() * 100 + 'vw';
+            e.style.animationDuration = (Math.random() * 3 + 5) + 's';
+            document.getElementById('bg-elements').appendChild(e);
+            setTimeout(() => e.remove(), 6000);
+        }, 800);
+
+        const reasons = ["Your smile", "Your kindness", "How you handle me", "Your intelligence", "The way you talk", "Your laugh", "Your support", "Your beauty", "Your patience", "Just being YOU!"];
+        let rIdx = 0;
+        function nextReason() {
+            if(rIdx < reasons.length) {
+                document.getElementById('reason-text').innerText = reasons[rIdx];
+                rIdx++;
+                document.getElementById('why-count').innerText = "Remaining: " + (reasons.length - rIdx);
+                confetti({ particleCount: 25, spread: 50, origin: { y: 0.7 }, colors: ['#ff85a1'] });
+            }
+            if(rIdx === reasons.length) { 
+                document.getElementById('next-why').style.display = 'block'; 
+                document.getElementById('why-count').style.display = 'none'; 
+            }
+        }
+
+        const photos = ["p1.png", "p2.png", "p3.png", "p4.png"];
+        const stack = document.getElementById('photo-stack');
+        photos.forEach((src, i) => {
+            const div = document.createElement('div');
+            div.className = 'photo-card';
+            div.style.zIndex = photos.length - i;
+            div.style.transform = `rotate(${Math.random()*10 - 5}deg)`;
+            div.innerHTML = `<img src="${src}">`;
+            div.onclick = function() {
+                this.style.transform = "translateX(200%) rotate(45deg)";
+                this.style.opacity = "0";
+                setTimeout(() => {
+                    this.style.display = 'none';
+                    if(document.querySelectorAll('.photo-card[style*="display: none"]').length === photos.length) 
+                        document.getElementById('next-photo').style.display = 'block';
+                }, 500);
+            };
+            stack.appendChild(div);
+        });
+
+        function redeem(el) { el.classList.add('used'); el.innerText = "REDEEMED ❤️"; confetti({ particleCount: 20 }); }
+
+        function triggerKisses() {
+            const container = document.getElementById('kiss-zone');
+            document.getElementById('kiss-instruction').innerText = "Mwah! ❤️";
+            document.getElementById('kiss-btn').style.display = 'none';
+            document.getElementById('next-kiss').style.display = 'block';
+
+            let count = 0;
+            const interval = setInterval(() => {
+                const k = document.createElement('div');
+                k.className = 'mini-kiss';
+                k.innerText = '💋';
+                k.style.left = Math.random() * 80 + 10 + '%';
+                container.appendChild(k);
+                setTimeout(() => k.remove(), 2000);
+                count++;
+                if(count > 15) clearInterval(interval);
+            }, 250);
+
+            confetti({
+                particleCount: 40,
+                spread: 70,
+                origin: { y: 0.7 },
+                shapes: [confetti.shapeFromText({ text: '💋' })]
+            });
+        }
+
+        function openLetter() { 
+            document.getElementById('flap').style.transform = "rotateX(180deg)"; 
+            setTimeout(() => document.getElementById('letter-modal').classList.add('open'), 600); 
+        }
+
+        let cakeState = 0;
+        function handleCake() {
+            const candle = document.getElementById('candle-obj');
+            if(cakeState === 0) {
+                candle.classList.add('lit');
+                document.getElementById('cake-sub').innerText = "Now blow it out! (Tap again)";
+                cakeState = 1;
+            } else if(cakeState === 1) {
+                candle.classList.remove('lit');
+                document.getElementById('cake-header').innerText = "HAPPY BIRTHDAY!";
+                document.getElementById('cake-sub').style.display = 'none';
+                document.getElementById('final-cta').style.display = 'block';
+                
+                const end = Date.now() + (5 * 1000);
+                (function frame() {
+                    confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 } });
+                    confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 } });
+                    if (Date.now() < end) requestAnimationFrame(frame);
+                }());
+                cakeState = 2;
+            }
+        }
+    </script>
+</body>
+</html>
